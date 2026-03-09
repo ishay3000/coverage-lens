@@ -134,7 +134,9 @@ There's also an optional [GitHub Action](packages/action/) included in this repo
 
 ## Future Plans
 
-- **Hit count tooltips** — hover over a coverage bar to see how many times the line was executed (like GitLab), the data is already in the Cobertura XML
+- **Hit count tooltips** — hover over a coverage bar to see how many times the line was executed (like GitLab); the data is already in the Cobertura XML
+- **Dedicated settings page** — full options page instead of cramming everything into the popup
+- **OAuth / GitHub Device Flow** — authenticate without manually creating a PAT (the token still gets stored the same way via `browser.storage.local`, but the UX is much smoother)
 - **Chrome MV3 support** — service worker based background script
 - **GitHub Enterprise support** — configurable API base URL
 - **Published extension** — Firefox Add-ons / Chrome Web Store listing
