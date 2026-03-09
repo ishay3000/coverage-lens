@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Coverage Lens",
+  "version": "1.0.0",
+  "description": "Line-by-line code coverage overlay on GitHub PR diff pages. Supports Cobertura XML.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://api.github.com/*"
+  ],
+  "background": {
+    "service_worker": "background-sw.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Coverage Lens Settings"
+  }
+}
