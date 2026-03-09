@@ -2,7 +2,7 @@
  * Parses Cobertura XML into the internal coverage format.
  * Works in both DOM contexts (DOMParser) and service workers (regex fallback).
  *
- * Output: { "path/to/file": { "lineNum": "covered"|"uncovered" }, ... }
+ * Output: { "path/to/file": { "lineNum": { status: "covered"|"uncovered", hits: N } }, ... }
  */
 
 /* exported parseCoberturaXml */
@@ -33,7 +33,7 @@ var parseCoberturaXml = (function () {
       for (var j = 0; j < lines.length; j++) {
         var num = lines[j].getAttribute("number");
         var hits = parseInt(lines[j].getAttribute("hits") || "0", 10);
-        fileLines[num] = hits > 0 ? "covered" : "uncovered";
+        fileLines[num] = { status: hits > 0 ? "covered" : "uncovered", hits: hits };
       }
       coverage[filename] = fileLines;
     }
@@ -64,7 +64,7 @@ var parseCoberturaXml = (function () {
       while ((lineMatch = lineRe.exec(classBody)) !== null) {
         var num = lineMatch[1];
         var hits = parseInt(lineMatch[2], 10);
-        fileLines[num] = hits > 0 ? "covered" : "uncovered";
+        fileLines[num] = { status: hits > 0 ? "covered" : "uncovered", hits: hits };
       }
 
       if (Object.keys(fileLines).length > 0) {
