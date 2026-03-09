@@ -3,6 +3,12 @@
   "name": "Coverage Lens",
   "version": "1.0.0",
   "description": "Line-by-line code coverage overlay on GitHub PR diff pages. Supports Cobertura XML.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "coverage-lens@ishay3000",
+      "strict_min_version": "109.0"
+    }
+  },
   "permissions": [
     "storage",
     "tabs",
