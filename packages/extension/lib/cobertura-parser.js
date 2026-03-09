@@ -88,25 +88,17 @@ var parseCoberturaXml = (function () {
    * Automatically selects DOM or regex parser based on environment.
    */
   function parseCoberturaXml(xmlString) {
-    console.log("[Coverage Lens] parseCoberturaXml called, input length: " + xmlString.length);
-    console.log("[Coverage Lens] DOMParser available: " + (typeof DOMParser !== "undefined"));
-
     if (typeof DOMParser !== "undefined") {
       try {
         var result = parseWithDOM(xmlString);
-        console.log("[Coverage Lens] DOMParser result: " + Object.keys(result).length + " files");
         if (Object.keys(result).length > 0) {
           return result;
         }
-        console.log("[Coverage Lens] DOMParser returned 0 files, falling back to regex");
       } catch (e) {
-        console.log("[Coverage Lens] DOMParser threw: " + e.message);
+        // DOMParser may be unavailable or broken (e.g. service workers)
       }
     }
-
-    var regexResult = parseWithRegex(xmlString);
-    console.log("[Coverage Lens] Regex result: " + Object.keys(regexResult).length + " files");
-    return regexResult;
+    return parseWithRegex(xmlString);
   }
 
   return parseCoberturaXml;

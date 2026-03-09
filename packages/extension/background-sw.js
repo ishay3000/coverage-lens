@@ -77,7 +77,6 @@ importScripts(
       if (!coverageData) {
         return { error: "No coverage artifact found. Has the CI pipeline run for this PR?" };
       }
-      console.log("[Coverage Lens] BG: fetchCoverage returned " + Object.keys(coverageData).length + " files");
       cache.set(key, coverageData);
       return { coverage: coverageData, showDebugPanel: settings.showDebugPanel };
     } catch (err) {
