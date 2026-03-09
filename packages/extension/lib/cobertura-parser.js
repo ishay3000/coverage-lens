@@ -50,7 +50,8 @@ var parseCoberturaXml = (function () {
 
     // Match each <class ...>...</class> block
     var classRe = /<class\s[^>]*filename="([^"]*)"[^>]*>([\s\S]*?)<\/class>/gi;
-    var lineRe = /<line\s[^>]*number="(\d+)"[^>]*hits="(\d+)"[^/>]*/gi;
+    var lineRe = /<line\s+([^>]*?)\/?\s*>/gi;
+    var attrRe = /(\w+)="([^"]*)"/g;
     var match;
 
     while ((match = classRe.exec(xmlString)) !== null) {
@@ -62,8 +63,15 @@ var parseCoberturaXml = (function () {
       lineRe.lastIndex = 0;
 
       while ((lineMatch = lineRe.exec(classBody)) !== null) {
-        var num = lineMatch[1];
-        var hits = parseInt(lineMatch[2], 10);
+        var attrs = {};
+        var attrMatch;
+        attrRe.lastIndex = 0;
+        while ((attrMatch = attrRe.exec(lineMatch[1])) !== null) {
+          attrs[attrMatch[1]] = attrMatch[2];
+        }
+        if (!attrs.number || !attrs.hits) continue;
+        var num = attrs.number;
+        var hits = parseInt(attrs.hits, 10);
         fileLines[num] = { status: hits > 0 ? "covered" : "uncovered", hits: hits };
       }
 
@@ -80,10 +88,25 @@ var parseCoberturaXml = (function () {
    * Automatically selects DOM or regex parser based on environment.
    */
   function parseCoberturaXml(xmlString) {
+    console.log("[Coverage Lens] parseCoberturaXml called, input length: " + xmlString.length);
+    console.log("[Coverage Lens] DOMParser available: " + (typeof DOMParser !== "undefined"));
+
     if (typeof DOMParser !== "undefined") {
-      return parseWithDOM(xmlString);
+      try {
+        var result = parseWithDOM(xmlString);
+        console.log("[Coverage Lens] DOMParser result: " + Object.keys(result).length + " files");
+        if (Object.keys(result).length > 0) {
+          return result;
+        }
+        console.log("[Coverage Lens] DOMParser returned 0 files, falling back to regex");
+      } catch (e) {
+        console.log("[Coverage Lens] DOMParser threw: " + e.message);
+      }
     }
-    return parseWithRegex(xmlString);
+
+    var regexResult = parseWithRegex(xmlString);
+    console.log("[Coverage Lens] Regex result: " + Object.keys(regexResult).length + " files");
+    return regexResult;
   }
 
   return parseCoberturaXml;

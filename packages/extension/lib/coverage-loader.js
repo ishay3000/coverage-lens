@@ -28,11 +28,21 @@ var loadCoverageFromZip = (function () {
       var xmlFile = preferred.length > 0 ? preferred[0] : xmlFiles[0];
 
       var xmlText = await xmlFile.async("text");
+      console.log("[Coverage Lens] XML file size: " + xmlText.length + " chars");
+      console.log("[Coverage Lens] XML first 500 chars: " + xmlText.substring(0, 500));
 
       // Verify it's actually Cobertura XML (not some other XML)
       if (xmlText.indexOf("<coverage") !== -1) {
         console.log("[Coverage Lens] Parsing Cobertura XML:", xmlFile.name);
-        return parseCoberturaXml(xmlText);
+        var result = parseCoberturaXml(xmlText);
+        console.log("[Coverage Lens] Parser returned " + Object.keys(result).length + " files");
+        if (Object.keys(result).length > 0) {
+          var firstKey = Object.keys(result)[0];
+          console.log("[Coverage Lens] First file: " + firstKey);
+        }
+        return result;
+      } else {
+        console.log("[Coverage Lens] XML does not contain <coverage tag, skipping");
       }
     }
 

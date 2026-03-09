@@ -118,7 +118,11 @@ var CoverageLensAPI = (function () {
     }
 
     var buf = await resp.arrayBuffer();
+    console.log("[Coverage Lens] Downloaded artifact: " + buf.byteLength + " bytes");
     var zip = await JSZip.loadAsync(buf);
+    var fileNames = [];
+    zip.forEach(function (path) { fileNames.push(path); });
+    console.log("[Coverage Lens] ZIP contents: " + JSON.stringify(fileNames));
     return loadCoverageFromZip(zip);
   }
 
