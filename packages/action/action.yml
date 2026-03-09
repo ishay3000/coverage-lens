@@ -1,0 +1,80 @@
+name: 'Coverage Lens Upload'
+description: 'Merge and upload Cobertura XML coverage reports for the Coverage Lens browser extension'
+branding:
+  icon: 'eye'
+  color: 'green'
+
+inputs:
+  artifact-pattern:
+    description: 'Pattern to match coverage artifact names for download'
+    default: 'coverage-*'
+  artifact-name:
+    description: 'Name of the final uploaded artifact'
+    default: 'pr-coverage'
+  retention-days:
+    description: 'Number of days to retain the artifact'
+    default: '7'
+  coverage-file:
+    description: 'Path to a single Cobertura XML file (skip artifact download/merge if set)'
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    # If a direct file path is provided, just upload it
+    - name: Upload direct file
+      if: inputs.coverage-file != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.coverage-file }}
+        retention-days: ${{ inputs.retention-days }}
+
+    # Otherwise, download and merge multiple coverage artifacts
+    - name: Download coverage artifacts
+      if: inputs.coverage-file == ''
+      uses: actions/download-artifact@v4
+      with:
+        pattern: ${{ inputs.artifact-pattern }}
+        path: __coverage_parts
+        merge-multiple: false
+
+    - name: Find and merge coverage files
+      if: inputs.coverage-file == ''
+      shell: bash
+      run: |
+        mkdir -p __coverage_final
+        XML_FILES=$(find __coverage_parts -name '*.xml' -type f 2>/dev/null)
+        XML_COUNT=$(echo "$XML_FILES" | grep -c . || true)
+
+        if [ "$XML_COUNT" -eq 0 ]; then
+          echo "::error::No XML coverage files found in artifacts matching '${{ inputs.artifact-pattern }}'"
+          exit 1
+        elif [ "$XML_COUNT" -eq 1 ]; then
+          echo "Found 1 coverage file, copying directly"
+          cp $XML_FILES __coverage_final/coverage.xml
+        else
+          echo "Found $XML_COUNT coverage files"
+          # Check if ReportGenerator is available for proper merge
+          if command -v reportgenerator &>/dev/null; then
+            echo "Merging with ReportGenerator..."
+            reportgenerator \
+              -reports:"$(echo $XML_FILES | tr ' ' ';')" \
+              -targetdir:__coverage_final \
+              -reporttypes:Cobertura
+            mv __coverage_final/Cobertura.xml __coverage_final/coverage.xml
+          else
+            echo "ReportGenerator not found. Using first file. Install ReportGenerator for proper merging."
+            FIRST=$(echo "$XML_FILES" | head -1)
+            cp "$FIRST" __coverage_final/coverage.xml
+          fi
+        fi
+        echo "Coverage file ready: __coverage_final/coverage.xml"
+
+    - name: Upload merged coverage
+      if: inputs.coverage-file == ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: __coverage_final/coverage.xml
+        retention-days: ${{ inputs.retention-days }}

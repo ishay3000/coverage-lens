@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Coverage Lens - Local Test Page</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      margin: 0;
+      padding: 24px;
+    }
+    h1 { font-size: 20px; margin-bottom: 16px; }
+    .file {
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .file-header {
+      background: #161b22;
+      padding: 10px 16px;
+      border-bottom: 1px solid #30363d;
+      font-size: 14px;
+    }
+    .file-header a { color: #58a6ff; text-decoration: none; }
+    table.diff-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 20px;
+    }
+    td.blob-num {
+      width: 50px;
+      min-width: 50px;
+      text-align: right;
+      padding: 0 10px;
+      color: #484f58;
+      cursor: pointer;
+      user-select: none;
+      vertical-align: top;
+      position: relative;
+    }
+    td.blob-code {
+      padding: 0 10px;
+      white-space: pre;
+    }
+    tr.blob-code-addition td.blob-code { background: rgba(46, 160, 67, 0.15); }
+    tr.blob-code-addition td.blob-num { background: rgba(46, 160, 67, 0.1); }
+    tr.blob-code-context td { background: transparent; }
+    .legend {
+      margin-top: 24px;
+      padding: 16px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 24px;
+    }
+    .legend-bar {
+      width: 4px;
+      height: 18px;
+      margin-right: 8px;
+      border-radius: 1px;
+    }
+    .legend-bar.green { background: rgba(45, 164, 78, 0.75); }
+    .legend-bar.red { background: rgba(207, 34, 46, 0.75); }
+    .legend-bar.none { background: transparent; border: 1px dashed #484f58; }
+    .xml-test {
+      margin-top: 24px;
+      padding: 16px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+    }
+    .xml-test input[type="file"] { margin: 8px 0; }
+    .xml-test pre {
+      background: #0d1117;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      max-height: 200px;
+      overflow: auto;
+      margin-top: 8px;
+    }
+  </style>
+  <link rel="stylesheet" href="../content.css">
+</head>
+<body>
+  <h1>Coverage Lens - Test Page</h1>
+  <p style="color:#8b949e; margin-bottom: 16px;">
+    Simulates a GitHub PR diff to test coverage indicators locally.
+    Green bars = covered, red bars = uncovered, no bar = uninstrumented.
+  </p>
+
+  <!-- File 1: C# Service -->
+  <div class="file">
+    <div class="file-header">
+      <a title="src/Services/UserService.cs">src/Services/UserService.cs</a>
+    </div>
+    <table class="diff-table" aria-label="Diff for: src/Services/UserService.cs">
+      <tr class="blob-code-context">
+        <td class="blob-num" data-line-number="8">8</td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="8">8</td>
+        <td class="blob-code"> using System;</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="10">10</td>
+        <td class="blob-code">+    public class UserService</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="11">11</td>
+        <td class="blob-code">+    {</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="12">12</td>
+        <td class="blob-code">+        public User GetUser(int id) =&gt; _repo.Find(id);</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="15">15</td>
+        <td class="blob-code">+        public void DeleteUser(int id) { /* TODO */ }</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="20">20</td>
+        <td class="blob-code">+        public List&lt;User&gt; ListAll() =&gt; _repo.All();</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="21">21</td>
+        <td class="blob-code">+        {</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="25">25</td>
+        <td class="blob-code">+            throw new NotImplementedException();</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="30">30</td>
+        <td class="blob-code">+        }</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- File 2: TypeScript util -->
+  <div class="file">
+    <div class="file-header">
+      <a title="src/utils.ts">src/utils.ts</a>
+    </div>
+    <table class="diff-table" aria-label="Diff for: src/utils.ts">
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="2">2</td>
+        <td class="blob-code">+export function add(a: number, b: number) {</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="3">3</td>
+        <td class="blob-code">+  return a + b;</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="4">4</td>
+        <td class="blob-code">+}</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="8">8</td>
+        <td class="blob-code">+export function divide(a: number, b: number) {</td>
+      </tr>
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="12">12</td>
+        <td class="blob-code">+  return a / b;</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- File 3: no coverage data -->
+  <div class="file">
+    <div class="file-header">
+      <a title="README.md">README.md</a>
+    </div>
+    <table class="diff-table" aria-label="Diff for: README.md">
+      <tr class="blob-code-addition">
+        <td class="blob-num"></td>
+        <td class="blob-num new-diff-line-number" data-diff-side="right" data-line-number="1">1</td>
+        <td class="blob-code">+# My Project</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="legend">
+    <strong>Legend:</strong>&nbsp;&nbsp;
+    <span class="legend-item"><span class="legend-bar green"></span> Covered</span>
+    <span class="legend-item"><span class="legend-bar red"></span> Not covered</span>
+    <span class="legend-item"><span class="legend-bar none"></span> Uninstrumented (no bar)</span>
+  </div>
+
+  <!-- XML file test section -->
+  <div class="xml-test">
+    <strong>Test Cobertura XML Parser</strong>
+    <p style="color:#8b949e; font-size:12px; margin-top:4px;">
+      Drop a Cobertura XML file to test parsing. The parsed output replaces mock data.
+    </p>
+    <input type="file" id="xml-file" accept=".xml">
+    <pre id="xml-output"></pre>
+  </div>
+
+  <!-- Load lib modules in order, then content script -->
+  <script src="../lib/cobertura-parser.js"></script>
+  <script src="../lib/diagnostics.js"></script>
+  <script src="../lib/path-matcher.js"></script>
+  <script src="../lib/indicators.js"></script>
+  <script src="mock-data.js"></script>
+  <script>
+    // XML file test: load and parse, then re-render
+    document.getElementById("xml-file").addEventListener("change", function (e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        var coverage = parseCoberturaXml(reader.result);
+        window.__COVERAGE_MOCK__ = coverage;
+        document.getElementById("xml-output").textContent =
+          JSON.stringify(coverage, null, 2);
+        // Clear and re-annotate
+        CoverageLensIndicators.clearAll();
+        window.__coverageLensInjected = false;
+        var s = document.createElement("script");
+        s.src = "../content.js";
+        document.body.appendChild(s);
+      };
+      reader.readAsText(file);
+    });
+  </script>
+  <script src="../content.js"></script>
+</body>
+</html>

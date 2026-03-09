@@ -1,0 +1,8 @@
+dist/
+*.zip
+*.crx
+*.xpi
+.DS_Store
+node_modules/
+__coverage_parts/
+__coverage_final/

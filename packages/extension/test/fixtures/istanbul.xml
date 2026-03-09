@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<coverage version="1" timestamp="1709913600" lines-valid="45" lines-covered="38" line-rate="0.844" branches-valid="8" branches-covered="6" branch-rate="0.75" complexity="0">
+  <packages>
+    <package name="src" line-rate="0.844" branch-rate="0.75" complexity="0">
+      <classes>
+        <class name="utils.ts" filename="src/utils.ts" line-rate="0.9" branch-rate="1" complexity="0">
+          <lines>
+            <line number="2" hits="5"/>
+            <line number="3" hits="5"/>
+            <line number="4" hits="5"/>
+            <line number="8" hits="0"/>
+            <line number="12" hits="3"/>
+          </lines>
+        </class>
+        <class name="api.ts" filename="src/api.ts" line-rate="0.8" branch-rate="0.5" complexity="0">
+          <lines>
+            <line number="5" hits="2"/>
+            <line number="6" hits="2"/>
+            <line number="10" hits="0"/>
+            <line number="11" hits="0"/>
+            <line number="15" hits="1"/>
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>

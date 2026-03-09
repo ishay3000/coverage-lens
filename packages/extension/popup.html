@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 340px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      color: #e6edf3;
+      background: #161b22;
+      padding: 16px;
+    }
+    h2 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #f0f6fc;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      color: #8b949e;
+      font-size: 12px;
+    }
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 12px;
+      color: #8b949e;
+    }
+    .toggle input { display: none; }
+    .toggle .switch {
+      width: 32px;
+      height: 18px;
+      border-radius: 9px;
+      background: #30363d;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .toggle input:checked + .switch {
+      background: #238636;
+    }
+    .toggle .switch::after {
+      content: '';
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #e6edf3;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: left 0.2s;
+    }
+    .toggle input:checked + .switch::after {
+      left: 16px;
+    }
+    button {
+      padding: 5px 16px;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      background: #21262d;
+      color: #e6edf3;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    button:hover { background: #30363d; }
+    .status {
+      margin-top: 10px;
+      font-size: 12px;
+      padding: 6px 8px;
+      border-radius: 6px;
+    }
+    .status.ok {
+      background: rgba(45, 164, 78, 0.15);
+      color: #3fb950;
+    }
+    .status.missing {
+      background: rgba(207, 34, 46, 0.15);
+      color: #f85149;
+    }
+    .hint {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #6e7681;
+      line-height: 1.4;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #21262d;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+  <h2>Coverage Lens</h2>
+
+  <label for="pat">GitHub Personal Access Token</label>
+  <input type="password" id="pat" placeholder="ghp_... or github_pat_...">
+
+  <label for="artifact-name">Artifact Name</label>
+  <input type="text" id="artifact-name" placeholder="pr-coverage">
+
+  <hr>
+
+  <label class="toggle">
+    <input type="checkbox" id="debug-panel">
+    <span class="switch"></span>
+    Show diagnostic panel on PR pages
+  </label>
+
+  <hr>
+
+  <button id="save">Save</button>
+  <div id="status"></div>
+
+  <div class="hint">
+    Token scope: <strong>repo</strong> (classic) or
+    <strong>Contents + Actions + Pull requests: Read</strong> (fine-grained).<br>
+    If your org uses SSO, authorize the token for that org.
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

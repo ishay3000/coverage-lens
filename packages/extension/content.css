@@ -1,0 +1,35 @@
+/* Coverage indicator bar injected at the left edge of diff line-number cells. */
+
+.coverage-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.coverage-indicator[data-coverage="covered"] {
+  background-color: rgba(45, 164, 78, 0.85) !important;
+}
+
+.coverage-indicator[data-coverage="uncovered"] {
+  background-color: rgba(207, 34, 46, 0.85) !important;
+}
+
+td[data-coverage-host],
+[data-coverage-host] {
+  position: relative !important;
+}
+
+/* Also color the entire row background for better visibility */
+td.new-diff-line-number[data-coverage="covered"],
+td[data-coverage-host][data-coverage="covered"] {
+  background-color: rgba(45, 164, 78, 0.15) !important;
+}
+
+td.new-diff-line-number[data-coverage="uncovered"],
+td[data-coverage-host][data-coverage="uncovered"] {
+  background-color: rgba(207, 34, 46, 0.15) !important;
+}
