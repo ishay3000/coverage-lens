@@ -51,9 +51,16 @@ See [docs/ci-examples/](docs/ci-examples/) for complete copy-paste workflow snip
 
 ### 3. Configure
 
-Click the extension icon and enter your **GitHub Personal Access Token** (classic token with `repo` scope). If your org uses SSO, authorize the token for that org.
+Click the extension icon and:
 
-Then navigate to any PR's "Files changed" tab. Coverage bars appear automatically.
+1. Enter your **GitHub Personal Access Token** (classic token with `repo` scope). If your org uses SSO, authorize the token for that org.
+2. **Add repositories to the whitelist.** The extension only activates on repos you explicitly enable. Enter one per line:
+   - `myorg/myrepo` — a specific repo
+   - `myorg/*` — all repos under an org/owner
+
+The extension will not inject into or make API calls for any repo not on this list.
+
+Then navigate to any whitelisted PR's "Files changed" tab. Coverage bars appear automatically.
 
 ## Multiple Test Jobs
 
@@ -124,14 +131,12 @@ There's also an optional [GitHub Action](packages/action/) included in this repo
 - **No GitHub Enterprise** — hardcoded to github.com (configurable GHE support is planned)
 - **Artifact storage** — coverage XMLs are stored as GitHub Actions artifacts which count toward your repo's storage quota. Use short `retention-days` (7 or less) to avoid accumulation
 - **No hit counts on hover** — GitLab shows how many times each line was hit; we only show covered/uncovered for now
-- **Permissions are broad** — the extension currently requests `<all_urls>` (will be narrowed to github.com only)
 
 ## Future Plans
 
 - **Hit count tooltips** — hover over a coverage bar to see how many times the line was executed (like GitLab), the data is already in the Cobertura XML
 - **Chrome MV3 support** — service worker based background script
 - **GitHub Enterprise support** — configurable API base URL
-- **Narrower permissions** — restrict to github.com only
 - **Published extension** — Firefox Add-ons / Chrome Web Store listing
 - **Rate limit handling** — detect GitHub API 429s and retry with backoff
 

@@ -23,12 +23,33 @@
       "githubPat",
       "artifactName",
       "showDebugPanel",
+      "enabledRepos",
     ]);
     return {
       pat: result.githubPat || null,
       artifactName: result.artifactName || DEFAULT_ARTIFACT_NAME,
       showDebugPanel: !!result.showDebugPanel,
+      enabledRepos: result.enabledRepos || [],
     };
+  }
+
+  function isRepoEnabled(enabledRepos, owner, repo) {
+    var fullName = (owner + "/" + repo).toLowerCase();
+    for (var i = 0; i < enabledRepos.length; i++) {
+      var entry = enabledRepos[i].toLowerCase().trim();
+      if (!entry) continue;
+      // Match "owner/repo" exactly or "owner/*" for all repos under an owner
+      if (entry === fullName) return true;
+      if (entry.endsWith("/*") && fullName.startsWith(entry.slice(0, -1))) return true;
+    }
+    return false;
+  }
+
+  function parseRepoFromUrl(url) {
+    var match = url && url.match(
+      /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/pull\/\d+\/(files|changes)/
+    );
+    return match ? { owner: match[1], repo: match[2] } : null;
   }
 
   async function handleGetCoverage(owner, repo, pr) {
@@ -37,6 +58,13 @@
       return {
         error:
           "No GitHub token configured. Click the extension icon to set one.",
+      };
+    }
+
+    if (!isRepoEnabled(settings.enabledRepos, owner, repo)) {
+      return {
+        error:
+          "Repository " + owner + "/" + repo + " is not in the whitelist. Add it in the extension settings.",
       };
     }
 
@@ -76,13 +104,15 @@
     }
   });
 
-  // -- Tab injection ---------------------------------------------------------
+  // -- Tab injection (only for whitelisted repos) ----------------------------
 
-  var PR_FILES_REGEX =
-    /^https:\/\/github\.com\/[^/]+\/[^/]+\/pull\/\d+\/(files|changes)/;
+  async function injectIntoTab(tabId, url) {
+    var parsed = parseRepoFromUrl(url);
+    if (!parsed) return;
 
-  function injectIntoTab(tabId, url) {
-    if (!url || !PR_FILES_REGEX.test(url)) return;
+    var settings = await getSettings();
+    if (!isRepoEnabled(settings.enabledRepos, parsed.owner, parsed.repo)) return;
+
     browser.tabs
       .insertCSS(tabId, { file: "content.css" })
       .catch(function () {});
