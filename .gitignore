@@ -6,3 +6,4 @@ dist/
 node_modules/
 __coverage_parts/
 __coverage_final/
+*.deb

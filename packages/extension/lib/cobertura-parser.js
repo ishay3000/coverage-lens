@@ -50,7 +50,8 @@ var parseCoberturaXml = (function () {
 
     // Match each <class ...>...</class> block
     var classRe = /<class\s[^>]*filename="([^"]*)"[^>]*>([\s\S]*?)<\/class>/gi;
-    var lineRe = /<line\s[^>]*number="(\d+)"[^>]*hits="(\d+)"[^/>]*/gi;
+    var lineRe = /<line\s+([^>]*?)\/?\s*>/gi;
+    var attrRe = /(\w+)="([^"]*)"/g;
     var match;
 
     while ((match = classRe.exec(xmlString)) !== null) {
@@ -62,8 +63,15 @@ var parseCoberturaXml = (function () {
       lineRe.lastIndex = 0;
 
       while ((lineMatch = lineRe.exec(classBody)) !== null) {
-        var num = lineMatch[1];
-        var hits = parseInt(lineMatch[2], 10);
+        var attrs = {};
+        var attrMatch;
+        attrRe.lastIndex = 0;
+        while ((attrMatch = attrRe.exec(lineMatch[1])) !== null) {
+          attrs[attrMatch[1]] = attrMatch[2];
+        }
+        if (!attrs.number || !attrs.hits) continue;
+        var num = attrs.number;
+        var hits = parseInt(attrs.hits, 10);
         fileLines[num] = { status: hits > 0 ? "covered" : "uncovered", hits: hits };
       }
 
@@ -81,7 +89,14 @@ var parseCoberturaXml = (function () {
    */
   function parseCoberturaXml(xmlString) {
     if (typeof DOMParser !== "undefined") {
-      return parseWithDOM(xmlString);
+      try {
+        var result = parseWithDOM(xmlString);
+        if (Object.keys(result).length > 0) {
+          return result;
+        }
+      } catch (e) {
+        // DOMParser may be unavailable or broken (e.g. service workers)
+      }
     }
     return parseWithRegex(xmlString);
   }

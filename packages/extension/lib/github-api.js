@@ -117,8 +117,8 @@ var CoverageLensAPI = (function () {
       throw new Error("Artifact download failed: " + resp.status);
     }
 
-    var blob = await resp.blob();
-    var zip = await JSZip.loadAsync(blob);
+    var buf = await resp.arrayBuffer();
+    var zip = await JSZip.loadAsync(buf);
     return loadCoverageFromZip(zip);
   }
 
