@@ -6,7 +6,8 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "coverage-lens@ishay3000",
-      "strict_min_version": "109.0"
+      "strict_min_version": "109.0",
+      "data_collection_permissions": []
     }
   },
   "permissions": [
