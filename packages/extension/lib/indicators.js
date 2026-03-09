@@ -17,14 +17,24 @@ var CoverageLensIndicators = (function () {
   /**
    * Inject a coverage indicator bar into a line-number cell.
    */
-  function injectIndicator(cell, status) {
+  function injectIndicator(cell, status, info) {
     if (cell.querySelector(".coverage-indicator")) return;
     cell.setAttribute("data-coverage-host", "");
     cell.setAttribute("data-coverage", status);
     var bar = document.createElement("span");
     bar.className = "coverage-indicator";
     bar.setAttribute("data-coverage", status);
-    bar.title = status === "covered" ? "Covered" : "Not covered";
+
+    var hits = (info && typeof info === "object") ? info.hits : null;
+    if (hits !== null && hits !== undefined) {
+      var hitsText = hits === 1 ? "1 time" : hits + " times";
+      bar.title = status === "covered"
+        ? "Covered (hit " + hitsText + ")"
+        : "Not covered (0 hits)";
+    } else {
+      bar.title = status === "covered" ? "Covered" : "Not covered";
+    }
+
     cell.insertBefore(bar, cell.firstChild);
   }
 
@@ -71,9 +81,10 @@ var CoverageLensIndicators = (function () {
         cell.getAttribute("data-line-number")
       );
       if (lineNum == null) return;
-      var status = fileData[lineNum] || fileData[String(lineNum)];
-      if (!status) return;
-      injectIndicator(cell, status);
+      var info = fileData[lineNum] || fileData[String(lineNum)];
+      if (!info) return;
+      var status = typeof info === "string" ? info : info.status;
+      injectIndicator(cell, status, info);
       count++;
     });
     totalAnnotated += count;
