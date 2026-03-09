@@ -4,7 +4,7 @@
 
 Line-by-line code coverage overlay for GitHub Pull Requests — mimicking [GitLab's built-in coverage visualization](https://docs.gitlab.com/ee/ci/testing/test_coverage_visualization.html), but for GitHub.
 
-![Firefox](https://img.shields.io/badge/Firefox-MV2-orange) ![License](https://img.shields.io/badge/license-MIT-green)
+![Firefox](https://img.shields.io/badge/Firefox-MV2-orange) ![Chrome](https://img.shields.io/badge/Chrome-MV3-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
 ![Coverage highlights on a PR diff](docs/images/Highlights.png)
 
@@ -15,6 +15,8 @@ Line-by-line code coverage overlay for GitHub Pull Requests — mimicking [GitLa
 3. The browser extension detects PR diff pages, downloads the artifact, and overlays coverage indicators
 
 **Green bar** = line is covered | **Red bar** = line is not covered | **No bar** = line is not instrumented
+
+Hover over any coverage bar to see the exact hit count (e.g. "Covered (hit 3 times)").
 
 The extension is completely independent of your CI setup. It doesn't care how you generate coverage or what language you use — it only looks for a GitHub Actions artifact containing Cobertura XML.
 
@@ -47,7 +49,9 @@ See [docs/ci-examples/](docs/ci-examples/) for complete copy-paste workflow snip
 
 ### 2. Install the extension
 
-**Firefox:** `about:debugging` > Load Temporary Add-on > select `packages/extension/manifest.json`
+**Chrome / Chromium-based (Vivaldi, Edge, Brave, etc.):** `chrome://extensions` > Enable Developer mode > Load unpacked > select `packages/extension/dist/chrome/`
+
+**Firefox:** `about:debugging` > Load Temporary Add-on > select `packages/extension/dist/firefox/manifest.json`
 
 ### 3. Configure
 
@@ -127,17 +131,13 @@ There's also an optional [GitHub Action](packages/action/) included in this repo
 
 ## Limitations
 
-- **Firefox only** — Chrome MV3 support not yet implemented
 - **No GitHub Enterprise** — hardcoded to github.com (configurable GHE support is planned)
 - **Artifact storage** — coverage XMLs are stored as GitHub Actions artifacts which count toward your repo's storage quota. Use short `retention-days` (7 or less) to avoid accumulation
-- **No hit counts on hover** — GitLab shows how many times each line was hit; we only show covered/uncovered for now
 
 ## Future Plans
 
-- **Hit count tooltips** — hover over a coverage bar to see how many times the line was executed (like GitLab); the data is already in the Cobertura XML
 - **Dedicated settings page** — full options page instead of cramming everything into the popup
-- **OAuth / GitHub Device Flow** — authenticate without manually creating a PAT (the token still gets stored the same way via `browser.storage.local`, but the UX is much smoother)
-- **Chrome MV3 support** — service worker based background script
+- **OAuth / GitHub Device Flow** — authenticate without manually creating a PAT
 - **GitHub Enterprise support** — configurable API base URL
 - **Published extension** — Firefox Add-ons / Chrome Web Store listing
 - **Rate limit handling** — detect GitHub API 429s and retry with backoff
@@ -153,7 +153,7 @@ The extension has a built-in debug panel. Enable it from the popup settings to s
 ```
 coverage-lens/
 ├── packages/
-│   ├── extension/     Browser extension (Firefox MV2)
+│   ├── extension/     Browser extension (Firefox MV2 + Chrome MV3)
 │   │   ├── lib/       Modular JS libraries (parser, API, cache, etc.)
 │   │   ├── test/      Local test page + fixture XMLs
 │   │   └── build.sh   Package for distribution
@@ -168,9 +168,8 @@ coverage-lens/
 ```bash
 cd packages/extension
 ./build.sh firefox   # → dist/firefox/
+./build.sh chrome    # → dist/chrome/
 ```
-
-Then load from `about:debugging` > Load Temporary Add-on > select `dist/firefox/manifest.json`.
 
 ## Development
 
