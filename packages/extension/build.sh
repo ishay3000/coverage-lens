@@ -14,21 +14,23 @@ SHARED_FILES="content.js content.css popup.html popup.js"
 case "$TARGET" in
   firefox)
     OUTDIR="dist/firefox"
-    rm -rf "$OUTDIR" && mkdir -p "$OUTDIR/lib"
+    rm -rf "$OUTDIR" && mkdir -p "$OUTDIR/lib" "$OUTDIR/icons"
     cp manifest.json "$OUTDIR/"
     cp background.js "$OUTDIR/"
     for f in $LIB_FILES; do cp "$f" "$OUTDIR/$f"; done
     for f in $SHARED_FILES; do cp "$f" "$OUTDIR/"; done
+    cp icons/icon-*.png "$OUTDIR/icons/"
     echo "Packaged Firefox extension in $OUTDIR/"
     echo "Load as temporary add-on from about:debugging"
     ;;
   chrome)
     OUTDIR="dist/chrome"
-    rm -rf "$OUTDIR" && mkdir -p "$OUTDIR/lib"
+    rm -rf "$OUTDIR" && mkdir -p "$OUTDIR/lib" "$OUTDIR/icons"
     cp manifest.chrome.json "$OUTDIR/manifest.json"
     cp background-sw.js "$OUTDIR/"
     for f in $LIB_FILES; do cp "$f" "$OUTDIR/$f"; done
     for f in $SHARED_FILES; do cp "$f" "$OUTDIR/"; done
+    cp icons/icon-*.png "$OUTDIR/icons/"
     echo "Packaged Chrome extension in $OUTDIR/"
     echo "Load from chrome://extensions > Developer mode > Load unpacked"
     ;;
