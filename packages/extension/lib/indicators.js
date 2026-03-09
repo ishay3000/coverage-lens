@@ -26,14 +26,17 @@ var CoverageLensIndicators = (function () {
     bar.setAttribute("data-coverage", status);
 
     var hits = (info && typeof info === "object") ? info.hits : null;
+    var tooltip;
     if (hits !== null && hits !== undefined) {
       var hitsText = hits === 1 ? "1 time" : hits + " times";
-      bar.title = status === "covered"
+      tooltip = status === "covered"
         ? "Covered (hit " + hitsText + ")"
         : "Not covered (0 hits)";
     } else {
-      bar.title = status === "covered" ? "Covered" : "Not covered";
+      tooltip = status === "covered" ? "Covered" : "Not covered";
     }
+    bar.title = tooltip;
+    cell.title = tooltip;
 
     cell.insertBefore(bar, cell.firstChild);
   }
