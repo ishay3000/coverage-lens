@@ -1,40 +1,41 @@
 # Coverage Lens
 
-> **Note:** This project was heavily vibe-coded. Expect bugs. Contributions and bug reports welcome.
-
 Line-by-line code coverage overlay for GitHub Pull Requests — mimicking [GitLab's built-in coverage visualization](https://docs.gitlab.com/ee/ci/testing/test_coverage_visualization.html), but for GitHub.
 
-![Firefox](https://img.shields.io/badge/Firefox-MV2-orange) ![Chrome](https://img.shields.io/badge/Chrome-MV3-blue) ![License](https://img.shields.io/badge/license-MIT-green)
+[![Firefox Add-on](https://img.shields.io/amo/v/coverage-lens?label=Firefox%20Add-on&logo=firefox&color=orange)](https://addons.mozilla.org/en-US/firefox/addon/coverage-lens/)
+![Chrome](https://img.shields.io/badge/Chrome-MV3-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 ![Coverage highlights on a PR diff](docs/images/Highlights.png)
 
 ## How It Works
 
-1. Your CI runs tests and produces a **Cobertura XML** coverage report
-2. CI uploads the report as a GitHub Actions **artifact** named `pr-coverage`
+1. Your CI runs tests and produces a **Cobertura XML** coverage report (any language, any framework)
+2. The **Coverage Lens action** converts it to a compact JSON format and uploads it as a GitHub Actions artifact
 3. The browser extension detects PR diff pages, downloads the artifact, and overlays coverage indicators
 
 **Green bar** = line is covered | **Red bar** = line is not covered | **No bar** = line is not instrumented
 
 Hover over any coverage bar to see the exact hit count (e.g. "Covered (hit 3 times)").
 
-The extension is completely independent of your CI setup. It doesn't care how you generate coverage or what language you use — it only looks for a GitHub Actions artifact containing Cobertura XML.
-
 ## Quick Start
 
-### 1. Add coverage upload to your CI
+### 1. Add to your CI workflow
 
-After your tests generate a Cobertura XML file, add this step to your workflow:
+After your tests generate a Cobertura XML file, add this step:
 
 ```yaml
-- uses: actions/upload-artifact@v4
+- uses: ishay3000/coverage-lens/packages/action@main
   with:
-    name: pr-coverage
-    path: path/to/your/coverage.xml
-    retention-days: 7
+    coverage-file: path/to/your/coverage.xml
+    pr-files-only: "true"
+  env:
+    GH_TOKEN: ${{ github.token }}
 ```
 
-That's it on the CI side. Every major test framework can produce Cobertura XML:
+The action automatically converts Cobertura XML to the compact JSON format the extension expects, resolves all file paths to be repo-relative, and uploads the artifact. **No manual path fixups or configuration needed.**
+
+Every major test framework can produce Cobertura XML:
 
 | Language | How to get Cobertura XML |
 |----------|--------------------------|
@@ -42,16 +43,16 @@ That's it on the CI side. Every major test framework can produce Cobertura XML:
 | **Python** | `pytest --cov --cov-report=xml` |
 | **JavaScript/TS** | `jest --coverage --coverageReporters=cobertura` |
 | **Java** | JaCoCo with `jacoco:report` |
-| **C/C++** | `gcov` + `lcov` + `lcov_cobertura` to convert |
-| **Go** | `go test -coverprofile=c.out` + `gocover-cobertura` to convert |
+| **C/C++** | `gcov` + `lcov` + `lcov_cobertura` |
+| **Go** | `go test -coverprofile=c.out` + `gocover-cobertura` |
 
 See [docs/ci-examples/](docs/ci-examples/) for complete copy-paste workflow snippets per language.
 
 ### 2. Install the extension
 
-**Chrome / Chromium-based (Vivaldi, Edge, Brave, etc.):** `chrome://extensions` > Enable Developer mode > Load unpacked > select `packages/extension/dist/chrome/`
+**Firefox:** Install from [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/coverage-lens/)
 
-**Firefox:** `about:debugging` > Load Temporary Add-on > select `packages/extension/dist/firefox/manifest.json`
+**Chrome / Chromium-based (Vivaldi, Edge, Brave, etc.):** Load unpacked from `packages/extension/dist/chrome/` (Chrome Web Store listing coming soon)
 
 ### 3. Configure
 
@@ -62,84 +63,70 @@ Click the extension icon and:
    - `myorg/myrepo` — a specific repo
    - `myorg/*` — all repos under an org/owner
 
-The extension will not inject into or make API calls for any repo not on this list.
-
 Then navigate to any whitelisted PR's "Files changed" tab. Coverage bars appear automatically.
 
-## Multiple Test Jobs
+## Multiple Coverage Jobs
 
-If your CI has separate test jobs (e.g. unit tests, integration tests, different languages), you need to merge their coverage reports into a single artifact. Here's how:
-
-1. Each test job uploads its own coverage artifact with a `coverage-` prefix
-2. A final merge job downloads all of them and combines into one file
-3. The merged file gets uploaded as `pr-coverage`
+If your CI has separate test jobs (different languages, unit vs integration, etc.), each job uploads its own coverage artifact. The action merges them automatically:
 
 ```yaml
 jobs:
-  unit-tests:
+  cpp-tests:
     steps:
-      - run: pytest --cov --cov-report=xml
+      # ... build and test with lcov ...
       - uses: actions/upload-artifact@v4
         with:
-          name: coverage-unit
+          name: coverage-cpp
           path: coverage.xml
-          retention-days: 1
 
-  integration-tests:
+  go-tests:
     steps:
-      - run: pytest --cov --cov-report=xml
+      # ... go test + gocover-cobertura ...
       - uses: actions/upload-artifact@v4
         with:
-          name: coverage-integration
+          name: coverage-go
           path: coverage.xml
-          retention-days: 1
+
+  dotnet-tests:
+    steps:
+      # ... dotnet test + reportgenerator merge ...
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-dotnet
+          path: merged/Cobertura.xml
 
   merge-coverage:
-    needs: [unit-tests, integration-tests]
+    needs: [cpp-tests, go-tests, dotnet-tests]
+    if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
-      # Download all coverage-* artifacts into one directory
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: ishay3000/coverage-lens/packages/action@main
         with:
-          pattern: coverage-*
-          path: coverage-parts
-          merge-multiple: false
-
-      # Merge XMLs with ReportGenerator (works for any Cobertura XML, not just .NET)
-      - name: Install ReportGenerator
-        run: |
-          dotnet tool install -g dotnet-reportgenerator-globaltool
-      - name: Merge coverage reports
-        run: |
-          reportgenerator \
-            "-reports:coverage-parts/**/*.xml" \
-            "-targetdir:merged" \
-            "-reporttypes:Cobertura" \
-            "-assemblyfilters:-*Test*"
-
-      # Upload the merged result — this is what the extension reads
-      - uses: actions/upload-artifact@v4
-        with:
-          name: pr-coverage
-          path: merged/Cobertura.xml
-          retention-days: 7
+          artifact-pattern: "coverage-*"
+          pr-files-only: "true"
+        env:
+          GH_TOKEN: ${{ github.token }}
 ```
 
-**How the merge works:** [ReportGenerator](https://github.com/danielpalme/ReportGenerator) is a .NET tool (but works with Cobertura XML from any language) that combines multiple coverage reports into one. It deduplicates file entries and merges line hit counts. If you only have one test job, you don't need any of this — just upload the XML directly.
+The action downloads all artifacts matching the pattern, parses every Cobertura XML file, auto-resolves file paths to be repo-relative (using the `<sources>` element from the XML), merges line hit counts, filters to only PR-changed files, and uploads a single compact JSON artifact.
 
-There's also an optional [GitHub Action](packages/action/) included in this repo (`packages/action/`) that wraps the download-merge-upload pattern, but for most cases the explicit steps above are clearer.
+For a complete working example, see the [multi-language demo repo](https://github.com/ishaypixellot/cpp-coverage-demo).
 
 ## Limitations
 
 - **No GitHub Enterprise** — hardcoded to github.com (configurable GHE support is planned)
-- **Artifact storage** — coverage XMLs are stored as GitHub Actions artifacts which count toward your repo's storage quota. Use short `retention-days` (7 or less) to avoid accumulation
+- **Artifact storage** — coverage artifacts count toward your repo's storage quota. Use short `retention-days` (7 or less) to avoid accumulation
 
 ## Future Plans
 
 - **Dedicated settings page** — full options page instead of cramming everything into the popup
 - **OAuth / GitHub Device Flow** — authenticate without manually creating a PAT
 - **GitHub Enterprise support** — configurable API base URL
-- **Published extension** — Firefox Add-ons / Chrome Web Store listing
+- **Chrome Web Store listing**
 - **Rate limit handling** — detect GitHub API 429s and retry with backoff
 
 ## Diagnostics
@@ -154,10 +141,17 @@ The extension has a built-in debug panel. Enable it from the popup settings to s
 coverage-lens/
 ├── packages/
 │   ├── extension/     Browser extension (Firefox MV2 + Chrome MV3)
-│   │   ├── lib/       Modular JS libraries (parser, API, cache, etc.)
-│   │   ├── test/      Local test page + fixture XMLs
+│   │   ├── lib/
+│   │   │   ├── api/       GitHub API client + cache
+│   │   │   ├── loaders/   Coverage data loading from ZIP artifacts
+│   │   │   ├── parsers/   JSON coverage format parser
+│   │   │   ├── ui/        Coverage indicators + diagnostics
+│   │   │   └── vendor/    Third-party libs (JSZip)
+│   │   ├── test/      Local test page with mock data
 │   │   └── build.sh   Package for distribution
-│   └── action/        Optional GitHub Action for multi-source merge
+│   └── action/        GitHub Action: XML→JSON conversion + artifact upload
+│       ├── action.yml
+│       └── xml-to-json.py
 └── docs/
     ├── ci-examples/   Copy-paste CI configs per language
     └── images/        Screenshots
@@ -173,7 +167,7 @@ cd packages/extension
 
 ## Development
 
-Open `packages/extension/test/test-page.html` in a browser to test coverage rendering with mock data. You can drag-and-drop a Cobertura XML file onto the test page to verify the parser works with your coverage output.
+Open `packages/extension/test/test-page.html` in a browser to test coverage rendering with mock data. Use the file picker to load a `coverage-lens/v1` JSON file and verify it renders correctly.
 
 ## License
 

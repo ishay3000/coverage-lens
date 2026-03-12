@@ -2,7 +2,7 @@
  * Firefox background script (Manifest V2).
  * Thin wrapper that wires browser.* APIs to lib/ modules.
  *
- * Loaded after: jszip, cobertura-parser, coverage-loader, github-api, cache
+ * Loaded after: jszip, json-coverage-parser, coverage-loader, github-api, cache
  */
 
 (function () {
@@ -12,9 +12,9 @@
   var cache = CoverageLensCache.create();
 
   var CONTENT_SCRIPTS = [
-    "lib/diagnostics.js",
-    "lib/path-matcher.js",
-    "lib/indicators.js",
+    "lib/ui/diagnostics.js",
+    "lib/ui/path-matcher.js",
+    "lib/ui/indicators.js",
     "content.js",
   ];
 
@@ -38,7 +38,6 @@
     for (var i = 0; i < enabledRepos.length; i++) {
       var entry = enabledRepos[i].toLowerCase().trim();
       if (!entry) continue;
-      // Match "owner/repo" exactly or "owner/*" for all repos under an owner
       if (entry === fullName) return true;
       if (entry.endsWith("/*") && fullName.startsWith(entry.slice(0, -1))) return true;
     }
@@ -96,15 +95,11 @@
     }
   }
 
-  // -- Message handler -------------------------------------------------------
-
   browser.runtime.onMessage.addListener(function (msg) {
     if (msg.type === "getCoverage") {
       return handleGetCoverage(msg.owner, msg.repo, msg.pr);
     }
   });
-
-  // -- Tab injection (only for whitelisted repos) ----------------------------
 
   async function injectIntoTab(tabId, url) {
     var parsed = parseRepoFromUrl(url);

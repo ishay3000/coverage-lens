@@ -2,7 +2,7 @@
  * GitHub API client for fetching coverage artifacts.
  * Pure functions — no browser extension API dependencies.
  *
- * Requires: JSZip, parseCoberturaXml, loadCoverageFromZip (loaded before this script)
+ * Requires: JSZip, parseCoverageJson, loadCoverageFromZip (loaded before this script)
  */
 
 /* exported CoverageLensAPI */

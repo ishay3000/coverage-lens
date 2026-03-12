@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Coverage Lens",
-  "version": "1.0.0",
-  "description": "Line-by-line code coverage overlay on GitHub PR diff pages. Supports Cobertura XML.",
+  "version": "1.1.0",
+  "description": "Line-by-line code coverage overlay on GitHub PR diff pages.",
   "permissions": [
     "storage",
     "tabs",
