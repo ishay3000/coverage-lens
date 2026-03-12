@@ -30,6 +30,10 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
+def _normalize(p: str) -> str:
+    return p.replace("\\", "/").lstrip("/")
+
+
 def _make_repo_relative(filepath: str, repo_root: str | None) -> str:
     """Make a path repo-relative by stripping the repo root and normalizing."""
     fp = filepath.replace("\\", "/")
@@ -96,13 +100,13 @@ def filter_by_pr_files(
     files: dict[str, dict[str, int]], pr_files: list[str]
 ) -> dict[str, dict[str, int]]:
     """Keep only coverage entries whose path suffix-matches a PR file."""
-    pr_normalized = [normalize_path(f) for f in pr_files if f.strip()]
+    pr_normalized = [_normalize(f) for f in pr_files if f.strip()]
     if not pr_normalized:
         return files
 
     filtered = {}
     for cov_path, lines in files.items():
-        norm_cov = normalize_path(cov_path)
+        norm_cov = _normalize(cov_path)
         for pr_path in pr_normalized:
             if (
                 norm_cov == pr_path
