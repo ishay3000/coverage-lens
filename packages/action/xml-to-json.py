@@ -3,8 +3,8 @@
 Convert Cobertura XML coverage report(s) to the compact Coverage Lens JSON format.
 
 Usage:
-  python xml-to-json.py <input.xml> <output.json> [--pr-files file1 file2 ...]
-  python xml-to-json.py <input_dir> <output.json> [--pr-files-from <path>]
+  python xml-to-json.py <input> <output.json> [--repo-root <path>] [--pr-files f1 f2 ...]
+  python xml-to-json.py <input_dir> <output.json> [--repo-root <path>] [--pr-files-from <path>]
 
 The output format (coverage-lens/v1):
   {
@@ -14,6 +14,13 @@ The output format (coverage-lens/v1):
       ...
     }
   }
+
+Path resolution:
+  Cobertura XML includes a <sources> element with the absolute source root.
+  When --repo-root is provided (typically $GITHUB_WORKSPACE), filenames are
+  automatically made repo-relative by computing the prefix from <sources>.
+  This means Go modules, .NET projects, etc. all produce correct paths
+  without any manual fixup in the CI workflow.
 """
 
 import json
@@ -27,16 +34,37 @@ def normalize_path(p: str) -> str:
     return p.replace("\\", "/").lstrip("/")
 
 
-def parse_cobertura_xml(xml_path: str) -> dict[str, dict[str, int]]:
+def _source_prefix(root: ET.Element, repo_root: str | None) -> str:
+    """Compute the repo-relative directory prefix from the XML <sources> element."""
+    if not repo_root:
+        return ""
+    repo_root = repo_root.rstrip("/")
+    sources = root.find("sources")
+    if sources is None:
+        return ""
+    source_el = sources.find("source")
+    if source_el is None or not source_el.text:
+        return ""
+    source_path = source_el.text.rstrip("/")
+    if not source_path.startswith(repo_root):
+        return ""
+    rel = source_path[len(repo_root) :].strip("/")
+    return (rel + "/") if rel else ""
+
+
+def parse_cobertura_xml(
+    xml_path: str, repo_root: str | None = None
+) -> dict[str, dict[str, int]]:
     tree = ET.parse(xml_path)
     root = tree.getroot()
+    prefix = _source_prefix(root, repo_root)
     files: dict[str, dict[str, int]] = {}
 
     for cls in root.iter("class"):
         filename = cls.get("filename")
         if not filename:
             continue
-        filename = normalize_path(filename)
+        filename = normalize_path(prefix + filename)
 
         lines_data = files.get(filename, {})
         for line in cls.iter("line"):
@@ -92,6 +120,7 @@ def main():
     output_path = args[1]
 
     pr_files: list[str] = []
+    repo_root: str | None = None
     i = 2
     while i < len(args):
         if args[i] == "--pr-files":
@@ -107,6 +136,11 @@ def main():
                         line.strip() for line in f if line.strip()
                     )
                 i += 1
+        elif args[i] == "--repo-root":
+            i += 1
+            if i < len(args):
+                repo_root = args[i]
+                i += 1
         else:
             i += 1
 
@@ -117,7 +151,7 @@ def main():
 
     all_files: dict[str, dict[str, int]] = {}
     for xml_file in xml_files:
-        parsed = parse_cobertura_xml(xml_file)
+        parsed = parse_cobertura_xml(xml_file, repo_root)
         for path, lines in parsed.items():
             if path in all_files:
                 existing = all_files[path]

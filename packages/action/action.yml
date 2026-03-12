@@ -40,6 +40,7 @@ runs:
         python3 "${{ github.action_path }}/xml-to-json.py" \
           "${{ inputs.coverage-file }}" \
           "__coverage_final/coverage.json" \
+          --repo-root "${{ github.workspace }}" \
           $PR_FILTER
       env:
         GH_TOKEN: ${{ github.token }}
@@ -85,14 +86,6 @@ runs:
         XML_COUNT=$(echo "$XML_FILES" | grep -c .)
 
         MERGE_INPUT="__coverage_parts"
-        if [ "$XML_COUNT" -gt 1 ] && command -v reportgenerator &>/dev/null; then
-          echo "Merging $XML_COUNT files with ReportGenerator..."
-          reportgenerator \
-            -reports:"$(echo $XML_FILES | tr ' ' ';')" \
-            -targetdir:__coverage_merged \
-            -reporttypes:Cobertura
-          MERGE_INPUT="__coverage_merged"
-        fi
 
         PR_FILTER=""
         if [ "${{ inputs.pr-files-only }}" = "true" ] && [ -n "${{ github.event.pull_request.number }}" ]; then
@@ -105,6 +98,7 @@ runs:
         python3 "${{ github.action_path }}/xml-to-json.py" \
           "$MERGE_INPUT" \
           "__coverage_final/coverage.json" \
+          --repo-root "${{ github.workspace }}" \
           $PR_FILTER
       env:
         GH_TOKEN: ${{ github.token }}
