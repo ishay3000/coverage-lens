@@ -30,8 +30,21 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
-def normalize_path(p: str) -> str:
-    return p.replace("\\", "/").lstrip("/")
+def _make_repo_relative(filepath: str, repo_root: str | None) -> str:
+    """Make a path repo-relative by stripping the repo root and normalizing."""
+    fp = filepath.replace("\\", "/")
+    if not repo_root:
+        return fp.lstrip("/")
+    root = repo_root.replace("\\", "/").rstrip("/") + "/"
+    # Absolute path that starts with repo root
+    if fp.startswith(root):
+        return fp[len(root) :]
+    # Same path but with leading slash stripped (from normalize_path)
+    stripped = fp.lstrip("/")
+    root_stripped = root.lstrip("/")
+    if stripped.startswith(root_stripped):
+        return stripped[len(root_stripped) :]
+    return stripped
 
 
 def _source_prefix(root: ET.Element, repo_root: str | None) -> str:
@@ -64,7 +77,7 @@ def parse_cobertura_xml(
         filename = cls.get("filename")
         if not filename:
             continue
-        filename = normalize_path(prefix + filename)
+        filename = _make_repo_relative(prefix + filename, repo_root)
 
         lines_data = files.get(filename, {})
         for line in cls.iter("line"):
