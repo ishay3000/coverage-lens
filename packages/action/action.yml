@@ -1,5 +1,5 @@
 name: 'Coverage Lens Upload'
-description: 'Merge and upload Cobertura XML coverage reports for the Coverage Lens browser extension'
+description: 'Convert Cobertura XML coverage to compact JSON and upload for the Coverage Lens browser extension'
 branding:
   icon: 'eye'
   color: 'green'
@@ -17,20 +17,42 @@ inputs:
   coverage-file:
     description: 'Path to a single Cobertura XML file (skip artifact download/merge if set)'
     default: ''
+  pr-files-only:
+    description: 'When true, only include coverage for files changed in the PR'
+    default: 'false'
 
 runs:
   using: 'composite'
   steps:
-    # If a direct file path is provided, just upload it
+    # ── Direct file path provided ──────────────────────────────────────
+    - name: Convert direct file to JSON
+      if: inputs.coverage-file != ''
+      shell: bash
+      run: |
+        mkdir -p __coverage_final
+        PR_FILTER=""
+        if [ "${{ inputs.pr-files-only }}" = "true" ] && [ -n "${{ github.event.pull_request.number }}" ]; then
+          gh pr diff "${{ github.event.pull_request.number }}" --name-only > __pr_files.txt 2>/dev/null || true
+          if [ -s __pr_files.txt ]; then
+            PR_FILTER="--pr-files-from __pr_files.txt"
+          fi
+        fi
+        python3 "${{ github.action_path }}/xml-to-json.py" \
+          "${{ inputs.coverage-file }}" \
+          "__coverage_final/coverage.json" \
+          $PR_FILTER
+      env:
+        GH_TOKEN: ${{ github.token }}
+
     - name: Upload direct file
       if: inputs.coverage-file != ''
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact-name }}
-        path: ${{ inputs.coverage-file }}
+        path: __coverage_final/coverage.json
         retention-days: ${{ inputs.retention-days }}
 
-    # Otherwise, download and merge multiple coverage artifacts
+    # ── Download and merge multiple artifacts ──────────────────────────
     - name: Download coverage artifacts
       if: inputs.coverage-file == ''
       uses: actions/download-artifact@v4
@@ -39,42 +61,58 @@ runs:
         path: __coverage_parts
         merge-multiple: false
 
-    - name: Find and merge coverage files
+    - name: Find XML files
       if: inputs.coverage-file == ''
+      id: find-xml
       shell: bash
       run: |
-        mkdir -p __coverage_final
-        XML_FILES=$(find __coverage_parts -name '*.xml' -type f 2>/dev/null)
-        XML_COUNT=$(echo "$XML_FILES" | grep -c . || true)
-
+        XML_FILES=$(find __coverage_parts -name '*.xml' -type f 2>/dev/null || true)
+        XML_COUNT=$(echo "$XML_FILES" | grep -c . || echo 0)
+        echo "count=$XML_COUNT" >> "$GITHUB_OUTPUT"
         if [ "$XML_COUNT" -eq 0 ]; then
           echo "::error::No XML coverage files found in artifacts matching '${{ inputs.artifact-pattern }}'"
           exit 1
-        elif [ "$XML_COUNT" -eq 1 ]; then
-          echo "Found 1 coverage file, copying directly"
-          cp $XML_FILES __coverage_final/coverage.xml
-        else
-          echo "Found $XML_COUNT coverage files"
-          # Check if ReportGenerator is available for proper merge
-          if command -v reportgenerator &>/dev/null; then
-            echo "Merging with ReportGenerator..."
-            reportgenerator \
-              -reports:"$(echo $XML_FILES | tr ' ' ';')" \
-              -targetdir:__coverage_final \
-              -reporttypes:Cobertura
-            mv __coverage_final/Cobertura.xml __coverage_final/coverage.xml
-          else
-            echo "ReportGenerator not found. Using first file. Install ReportGenerator for proper merging."
-            FIRST=$(echo "$XML_FILES" | head -1)
-            cp "$FIRST" __coverage_final/coverage.xml
+        fi
+        echo "Found $XML_COUNT XML coverage file(s)"
+
+    - name: Merge and convert to JSON
+      if: inputs.coverage-file == '' && steps.find-xml.outputs.count != '0'
+      shell: bash
+      run: |
+        mkdir -p __coverage_final
+        # If ReportGenerator is available and multiple files exist, merge first
+        XML_FILES=$(find __coverage_parts -name '*.xml' -type f)
+        XML_COUNT=$(echo "$XML_FILES" | grep -c .)
+
+        MERGE_INPUT="__coverage_parts"
+        if [ "$XML_COUNT" -gt 1 ] && command -v reportgenerator &>/dev/null; then
+          echo "Merging $XML_COUNT files with ReportGenerator..."
+          reportgenerator \
+            -reports:"$(echo $XML_FILES | tr ' ' ';')" \
+            -targetdir:__coverage_merged \
+            -reporttypes:Cobertura
+          MERGE_INPUT="__coverage_merged"
+        fi
+
+        PR_FILTER=""
+        if [ "${{ inputs.pr-files-only }}" = "true" ] && [ -n "${{ github.event.pull_request.number }}" ]; then
+          gh pr diff "${{ github.event.pull_request.number }}" --name-only > __pr_files.txt 2>/dev/null || true
+          if [ -s __pr_files.txt ]; then
+            PR_FILTER="--pr-files-from __pr_files.txt"
           fi
         fi
-        echo "Coverage file ready: __coverage_final/coverage.xml"
+
+        python3 "${{ github.action_path }}/xml-to-json.py" \
+          "$MERGE_INPUT" \
+          "__coverage_final/coverage.json" \
+          $PR_FILTER
+      env:
+        GH_TOKEN: ${{ github.token }}
 
     - name: Upload merged coverage
       if: inputs.coverage-file == ''
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact-name }}
-        path: __coverage_final/coverage.xml
+        path: __coverage_final/coverage.json
         retention-days: ${{ inputs.retention-days }}

@@ -4,11 +4,11 @@
  */
 
 importScripts(
-  "lib/jszip.min.js",
-  "lib/cobertura-parser.js",
-  "lib/coverage-loader.js",
-  "lib/github-api.js",
-  "lib/cache.js"
+  "lib/vendor/jszip.min.js",
+  "lib/parsers/json-coverage-parser.js",
+  "lib/loaders/coverage-loader.js",
+  "lib/api/github-api.js",
+  "lib/api/cache.js"
 );
 
 (function () {
@@ -18,9 +18,9 @@ importScripts(
   var cache = CoverageLensCache.create();
 
   var CONTENT_SCRIPTS = [
-    "lib/diagnostics.js",
-    "lib/path-matcher.js",
-    "lib/indicators.js",
+    "lib/ui/diagnostics.js",
+    "lib/ui/path-matcher.js",
+    "lib/ui/indicators.js",
     "content.js",
   ];
 
@@ -85,7 +85,6 @@ importScripts(
     }
   }
 
-  // Message handler — Chrome needs sendResponse + return true for async
   chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     if (msg.type === "getCoverage") {
       handleGetCoverage(msg.owner, msg.repo, msg.pr).then(sendResponse);
@@ -93,7 +92,6 @@ importScripts(
     }
   });
 
-  // Tab injection using chrome.scripting API (MV3)
   async function injectIntoTab(tabId, url) {
     var parsed = parseRepoFromUrl(url);
     if (!parsed) return;

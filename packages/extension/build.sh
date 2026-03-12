@@ -8,27 +8,34 @@ cd "$(dirname "$0")"
 
 TARGET="${1:-firefox}"
 
-LIB_FILES="lib/jszip.min.js lib/cobertura-parser.js lib/coverage-loader.js lib/github-api.js lib/cache.js lib/path-matcher.js lib/diagnostics.js lib/indicators.js"
+LIB_DIRS="lib/vendor lib/parsers lib/loaders lib/api lib/ui"
 SHARED_FILES="content.js content.css popup.html popup.js"
 
 case "$TARGET" in
   firefox)
     OUTDIR="dist/firefox"
-    rm -rf "$OUTDIR" && mkdir -p "$OUTDIR/lib" "$OUTDIR/icons"
+    rm -rf "$OUTDIR" && mkdir -p "$OUTDIR/icons"
+    for d in $LIB_DIRS; do
+      mkdir -p "$OUTDIR/$d"
+      cp "$d"/*.js "$OUTDIR/$d/" 2>/dev/null || true
+    done
     cp manifest.json "$OUTDIR/"
     cp background.js "$OUTDIR/"
-    for f in $LIB_FILES; do cp "$f" "$OUTDIR/$f"; done
     for f in $SHARED_FILES; do cp "$f" "$OUTDIR/"; done
     cp icons/icon-*.png "$OUTDIR/icons/"
+    cp icons/toolbar-*.svg "$OUTDIR/icons/" 2>/dev/null || true
     echo "Packaged Firefox extension in $OUTDIR/"
     echo "Load as temporary add-on from about:debugging"
     ;;
   chrome)
     OUTDIR="dist/chrome"
-    rm -rf "$OUTDIR" && mkdir -p "$OUTDIR/lib" "$OUTDIR/icons"
+    rm -rf "$OUTDIR" && mkdir -p "$OUTDIR/icons"
+    for d in $LIB_DIRS; do
+      mkdir -p "$OUTDIR/$d"
+      cp "$d"/*.js "$OUTDIR/$d/" 2>/dev/null || true
+    done
     cp manifest.chrome.json "$OUTDIR/manifest.json"
     cp background-sw.js "$OUTDIR/"
-    for f in $LIB_FILES; do cp "$f" "$OUTDIR/$f"; done
     for f in $SHARED_FILES; do cp "$f" "$OUTDIR/"; done
     cp icons/icon-*.png "$OUTDIR/icons/"
     echo "Packaged Chrome extension in $OUTDIR/"

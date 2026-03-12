@@ -72,15 +72,15 @@
     .legend-bar.green { background: rgba(45, 164, 78, 0.75); }
     .legend-bar.red { background: rgba(207, 34, 46, 0.75); }
     .legend-bar.none { background: transparent; border: 1px dashed #484f58; }
-    .xml-test {
+    .json-test {
       margin-top: 24px;
       padding: 16px;
       background: #161b22;
       border: 1px solid #30363d;
       border-radius: 6px;
     }
-    .xml-test input[type="file"] { margin: 8px 0; }
-    .xml-test pre {
+    .json-test input[type="file"] { margin: 8px 0; }
+    .json-test pre {
       background: #0d1117;
       padding: 8px;
       border-radius: 4px;
@@ -208,34 +208,32 @@
     <span class="legend-item"><span class="legend-bar none"></span> Uninstrumented (no bar)</span>
   </div>
 
-  <!-- XML file test section -->
-  <div class="xml-test">
-    <strong>Test Cobertura XML Parser</strong>
+  <!-- JSON file test section -->
+  <div class="json-test">
+    <strong>Test Coverage JSON Parser</strong>
     <p style="color:#8b949e; font-size:12px; margin-top:4px;">
-      Drop a Cobertura XML file to test parsing. The parsed output replaces mock data.
+      Drop a coverage-lens/v1 JSON file to test parsing. The parsed output replaces mock data.
     </p>
-    <input type="file" id="xml-file" accept=".xml">
-    <pre id="xml-output"></pre>
+    <input type="file" id="json-file" accept=".json">
+    <pre id="json-output"></pre>
   </div>
 
   <!-- Load lib modules in order, then content script -->
-  <script src="../lib/cobertura-parser.js"></script>
-  <script src="../lib/diagnostics.js"></script>
-  <script src="../lib/path-matcher.js"></script>
-  <script src="../lib/indicators.js"></script>
+  <script src="../lib/parsers/json-coverage-parser.js"></script>
+  <script src="../lib/ui/diagnostics.js"></script>
+  <script src="../lib/ui/path-matcher.js"></script>
+  <script src="../lib/ui/indicators.js"></script>
   <script src="mock-data.js"></script>
   <script>
-    // XML file test: load and parse, then re-render
-    document.getElementById("xml-file").addEventListener("change", function (e) {
+    document.getElementById("json-file").addEventListener("change", function (e) {
       var file = e.target.files[0];
       if (!file) return;
       var reader = new FileReader();
       reader.onload = function () {
-        var coverage = parseCoberturaXml(reader.result);
+        var coverage = parseCoverageJson(reader.result);
         window.__COVERAGE_MOCK__ = coverage;
-        document.getElementById("xml-output").textContent =
+        document.getElementById("json-output").textContent =
           JSON.stringify(coverage, null, 2);
-        // Clear and re-annotate
         CoverageLensIndicators.clearAll();
         window.__coverageLensInjected = false;
         var s = document.createElement("script");
