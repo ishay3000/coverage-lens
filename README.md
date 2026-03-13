@@ -3,7 +3,6 @@
 Line-by-line code coverage overlay for GitHub Pull Requests — mimicking [GitLab's built-in coverage visualization](https://docs.gitlab.com/ee/ci/testing/test_coverage_visualization.html), but for GitHub.
 
 [![Firefox Add-on](https://img.shields.io/amo/v/coverage-lens?label=Firefox%20Add-on&logo=firefox&color=orange)](https://addons.mozilla.org/en-US/firefox/addon/coverage-lens/)
-![Chrome](https://img.shields.io/badge/Chrome-MV3-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ![Coverage highlights on a PR diff](docs/images/Highlights.png)
@@ -113,8 +112,6 @@ jobs:
 ```
 
 The action downloads all artifacts matching the pattern, parses every Cobertura XML file, auto-resolves file paths to be repo-relative (using the `<sources>` element from the XML), merges line hit counts, filters to only PR-changed files, and uploads a single compact JSON artifact.
-
-For a complete working example, see the [multi-language demo repo](https://github.com/ishaypixellot/cpp-coverage-demo).
 
 ## Limitations
 
