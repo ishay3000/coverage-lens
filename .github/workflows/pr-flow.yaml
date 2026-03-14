@@ -7,4 +7,5 @@ on:
 
 jobs:
   pr-build:
+    name: Build Extension
     uses: ./.github/workflows/build-extension.yaml
