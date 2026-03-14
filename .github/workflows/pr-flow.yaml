@@ -1,0 +1,10 @@
+name: PR Build
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  pr-build:
+    uses: ./.github/workflows/build-extension.yml
