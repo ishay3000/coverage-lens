@@ -1,0 +1,11 @@
+name: Dev Build
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  dev-build:
+    name: Build Extension
+    uses: ./.github/workflows/build-extension.yaml

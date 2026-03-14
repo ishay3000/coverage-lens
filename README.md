@@ -3,7 +3,7 @@
 Line-by-line code coverage overlay for GitHub Pull Requests — mimicking [GitLab's built-in coverage visualization](https://docs.gitlab.com/ee/ci/testing/test_coverage_visualization.html), but for GitHub.
 
 [![Firefox Add-on](https://img.shields.io/amo/v/coverage-lens?label=Firefox%20Add-on&logo=firefox&color=orange)](https://addons.mozilla.org/en-US/firefox/addon/coverage-lens/)
-[![Build](https://github.com/ishay3000/coverage-lens/actions/workflows/build-release.yaml/badge.svg)](https://github.com/ishay3000/coverage-lens/actions/workflows/build-release.yaml)
+![Dev Build](https://github.com/ishay3000/coverage-lens/actions/workflows/dev-build.yaml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ![Coverage highlights on a PR diff](docs/images/Highlights.png)
