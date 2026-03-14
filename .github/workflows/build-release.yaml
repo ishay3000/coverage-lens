@@ -1,4 +1,4 @@
-name: Build and Release Browser Extension
+name: Build
 
 on:
   push:
