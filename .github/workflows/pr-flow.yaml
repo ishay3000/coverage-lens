@@ -7,4 +7,4 @@ on:
 
 jobs:
   pr-build:
-    uses: ./.github/workflows/build-extension.yml
+    uses: ./.github/workflows/build-extension.yaml

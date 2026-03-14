@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/build-extension.yml
+    uses: ./.github/workflows/build-extension.yaml
 
   release:
     needs: build
