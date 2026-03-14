@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*" # triggers only on version tags
+  workflow_dispatch: {} # allows manual trigger from GitHub UI
 
 jobs:
   release:
