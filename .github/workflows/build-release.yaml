@@ -1,10 +1,9 @@
-# .github/workflows/build-release.yml
 name: Build and Release Browser Extension
 
 on:
   push:
     tags:
-      - "v*" # triggers only on version tags like v1.1.0
+      - "v*" # triggers only on version tags
 
 jobs:
   release:
