@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - "v*" # triggers only on version tags
+  workflow_dispatch: {} # allows manual trigger from GitHub UI
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/extension
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          bash build.sh chrome
+          bash build.sh firefox
+
+      - name: Zip
+        run: |
+          zip -r dist/coverage-lens-chrome.zip dist/chrome
+          zip -r dist/coverage-lens-firefox.zip dist/firefox
+
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+
+      - name: Upload Chrome to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: packages/extension/dist/coverage-lens-chrome.zip
+          asset_name: coverage-lens-chrome.zip
+
+      - name: Upload Firefox to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: packages/extension/dist/coverage-lens-firefox.zip
+          asset_name: coverage-lens-firefox.zip
