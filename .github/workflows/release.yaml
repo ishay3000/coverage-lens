@@ -7,13 +7,13 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to release (e.g., v1.1.0-test)"
+        description: "Tag to release (e.g., v1.1.0)"
         required: false
         default: "v0.0.0-test" # default tag if nothing is entered
 
 jobs:
   build:
-    uses: ./.github/workflows/build-extension.yml
+    uses: ./.github/workflows/build-extension.yaml
 
   release:
     needs: build
