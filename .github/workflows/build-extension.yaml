@@ -1,0 +1,29 @@
+name: Build Extension
+on:
+  workflow_call: {} # reusable workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/extension
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Chrome and Firefox
+        run: |
+          bash build.sh chrome
+          bash build.sh firefox
+
+      - name: Zip artifacts
+        run: |
+          zip -r dist/coverage-lens-chrome.zip dist/chrome
+          zip -r dist/coverage-lens-firefox.zip dist/firefox
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-artifacts
+          path: packages/extension/dist/*.zip
