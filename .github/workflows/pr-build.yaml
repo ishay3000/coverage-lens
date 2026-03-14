@@ -4,8 +4,16 @@ on:
   pull_request:
     branches:
       - dev
+      - main
+  push:
+    branches:
+      - dev
+      - main
 
 jobs:
   pr-build:
     name: Build Extension
     uses: ./.github/workflows/build-extension.yaml
+    concurrency:
+      group: pr-build-${{ github.ref }}
+      cancel-in-progress: true
