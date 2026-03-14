@@ -8,21 +8,23 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/extension
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Chrome
-        run: ./build.sh chrome
+      - name: Build
+        run: |
+          bash build.sh chrome
+          bash build.sh firefox
 
-      - name: Build Firefox
-        run: ./build.sh firefox
-
-      - name: Zip Chrome
-        run: zip -r dist/coverage-lens-chrome.zip dist/chrome
-
-      - name: Zip Firefox
-        run: zip -r dist/coverage-lens-firefox.zip dist/firefox
+      - name: Zip
+        run: |
+          zip -r dist/coverage-lens-chrome.zip dist/chrome
+          zip -r dist/coverage-lens-firefox.zip dist/firefox
 
       - name: Create GitHub release
         id: create_release
@@ -39,7 +41,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/coverage-lens-chrome.zip
+          asset_path: packages/extension/dist/coverage-lens-chrome.zip
           asset_name: coverage-lens-chrome.zip
 
       - name: Upload Firefox to release
@@ -48,5 +50,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/coverage-lens-firefox.zip
+          asset_path: packages/extension/dist/coverage-lens-firefox.zip
           asset_name: coverage-lens-firefox.zip
