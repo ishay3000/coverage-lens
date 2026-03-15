@@ -1,16 +1,14 @@
 name: Release Extension
 
-# Trigger only on tag push or manual dispatch
 on:
   push:
     tags:
-      - "v*" # triggers when someone pushes a tag like v1.1.0
+      - "v*"
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to release (e.g., v1.1.0)"
-        required: false
-        default: ""
+        description: "Existing tag to release (e.g., v1.1.0)"
+        required: true
 
 jobs:
   build:
@@ -19,6 +17,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,10 +27,23 @@ jobs:
         id: tag
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "RELEASE_TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+            TAG="${{ github.event.inputs.tag }}"
           else
-            echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+            TAG="${GITHUB_REF#refs/tags/}"
           fi
+
+          if [ -z "$TAG" ]; then
+            echo "::error::No tag provided"
+            exit 1
+          fi
+
+          # Verify the tag exists
+          if ! git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG does not exist. Create it first: git tag $TAG && git push --tags"
+            exit 1
+          fi
+
+          echo "RELEASE_TAG=$TAG" >> "$GITHUB_ENV"
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -45,7 +58,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          release_name: Release ${{ env.RELEASE_TAG }}
+          release_name: ${{ env.RELEASE_TAG }}
           draft: false
           prerelease: false
 
